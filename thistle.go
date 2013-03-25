@@ -1,6 +1,6 @@
 package main
 
-import ("fmt"; "math/rand"; "time"; "container/list")
+import ("fmt"; "math/rand"; "time")//; "container/list")
 
 var affectedCubies = [][]int{
   []int {  0,  1,  2,  3,  0,  1,  2,  3 },   // U
@@ -117,46 +117,43 @@ func intsliceEqual(s1 []int, s2 []int) bool {
     return true
 }
 
+func DLS(node Cube,goalId []int,depth int,phase int) (Cube, bool){
+    if depth == 0 {
+        nodeId := node.id(phase)
+        if intsliceEqual(goalId,nodeId) {
+            return node, true
+        }
+        return node, false
+    } else if depth > 0 {
+        for _,move := range phaseMoves[phase] {
+            next := node.doMove(move)
+            if next,ok := DLS(next,goalId,depth - 1, phase); ok {
+                return next, true
+            }
+        }
+    }
+    return node, false
+}
+
 
 func main() {
     rand.Seed(time.Now().UnixNano())
-	//fmt.Println(affectedCubies)
-    //fmt.Println(phaseMoves)
     goal := goalCube()
     current := goalCube()
-    for i:=0; i < 30; i++ {
+    for i:=0; i < 5; i++ {
         current = current.doMove(rand.Intn(18))
     }
     fmt.Println(current)
 
     for phase := 0; phase < 4; phase++ {
-        currentId := current.id(phase)
-        goalId := goal.id(phase)
-        states := list.New()
-        states.PushBack(current)
-        fmt.Println("start phase: ", phase)
-        fmt.Println("currentId: ",currentId)
-        fmt.Println("current cube: ", current)
-        for phaseDone := intsliceEqual(currentId,goalId); !phaseDone; {
-            fmt.Println(phase)
-            nextStates := list.New()
-            for e := states.Front(); e != nil; e = e.Next() {
-                curr := e.Value.(Cube)
-                for _,move := range phaseMoves[phase] {
-                    nextState := curr.doMove(move)
-                    //fmt.Println(nextState.id(phase),goalId)
-                    if phaseDone = intsliceEqual(nextState.id(phase),goalId); phaseDone {
-                        current = nextState
-                        break
-                    } else {
-                        nextStates.PushBack(nextState)
-                    }
-                }
-                if phaseDone {
-                    break
-                }
-            }
-            states = nextStates
+        var goalId, depth, ok = goal.id(phase), 0, false
+        var res Cube
+        for ! ok {
+            fmt.Println(depth)
+            res,ok = DLS(current,goalId,depth,phase)
+            depth++
         }
+        current = res
+        fmt.Println(phase+1,res)
     }
 }
