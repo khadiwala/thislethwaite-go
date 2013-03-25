@@ -1,6 +1,6 @@
 package main
 
-import ("fmt"; "math/rand"; "time")//; "container/list")
+import ("fmt"; "math/rand"; "time")
 
 var affectedCubies = [][]int{
   []int {  0,  1,  2,  3,  0,  1,  2,  3 },   // U
@@ -18,16 +18,29 @@ var phaseMoves = [][]int{
     []int{1, 4, 7, 10, 13, 16},
 }
 
-type Cube struct {
-    state []int
-}
-
 func intbool(b bool) int {
     if b {
         return 1
     }
     return 0
 }
+
+func intsliceEqual(s1 []int, s2 []int) bool {
+    if len(s1) != len(s2) {
+        return false
+    }
+    for i := range s1 {
+        if s1[i] != s2[i] {
+            return false
+        }
+    }
+    return true
+}
+
+type Cube struct {
+    state []int
+}
+
 
 func (cube *Cube) id(phase int) []int{
     switch {
@@ -63,7 +76,7 @@ func (cube *Cube) id(phase int) []int{
     return cube.state
 }
 
-func (cube *Cube) doMove(move int) Cube {
+func (cube *Cube) doMove(move int) *Cube {
     newstate := make([]int,len(cube.state))
     copy(newstate,cube.state)
     oldstate := make([]int,len(cube.state))
@@ -94,30 +107,18 @@ func (cube *Cube) doMove(move int) Cube {
             }
         }
     }
-  return Cube{newstate}
+  return &Cube{newstate}
 }
 
-func goalCube() Cube {
+func goalCube() *Cube {
 	state:=make([]int,40)
 	for i := 0; i < 20; i++ {
 		state[i] = i
 	}
-	return Cube{state}
+	return &Cube{state}
 }
 
-func intsliceEqual(s1 []int, s2 []int) bool {
-    if len(s1) != len(s2) {
-        return false
-    }
-    for i := range s1 {
-        if s1[i] != s2[i] {
-            return false
-        }
-    }
-    return true
-}
-
-func DLS(node Cube,goalId []int,depth int,phase int) (Cube, bool){
+func DLS(node *Cube,goalId []int,depth int,phase int) (*Cube, bool){
     if depth == 0 {
         nodeId := node.id(phase)
         if intsliceEqual(goalId,nodeId) {
@@ -147,7 +148,7 @@ func main() {
 
     for phase := 0; phase < 4; phase++ {
         var goalId, depth, ok = goal.id(phase), 0, false
-        var res Cube
+        var res *Cube
         for ! ok {
             fmt.Println(depth)
             res,ok = DLS(current,goalId,depth,phase)
