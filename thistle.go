@@ -1,6 +1,6 @@
 package main
 
-import ("fmt"; "math/rand"; "time")
+import ("fmt"; "math/rand"; "time"; "container/list")
 
 var affectedCubies = [][]int{
   []int {  0,  1,  2,  3,  0,  1,  2,  3 },   // U
@@ -132,14 +132,16 @@ func main() {
     for phase := 0; phase < 4; phase++ {
         currentId := current.id(phase)
         goalId := goal.id(phase)
-        states := []Cube {current}
+        states := list.New()
+        states.PushBack(current)
         fmt.Println("start phase: ", phase)
         fmt.Println("currentId: ",currentId)
         fmt.Println("current cube: ", current)
         for phaseDone := intsliceEqual(currentId,goalId); !phaseDone; {
             fmt.Println(phase)
-            nextStates := make([]Cube,0,len(phaseMoves[phase]))
-            for _,curr := range states {
+            nextStates := list.New()
+            for e := states.Front(); e != nil; e = e.Next() {
+                curr := e.Value.(Cube)
                 for _,move := range phaseMoves[phase] {
                     nextState := curr.doMove(move)
                     //fmt.Println(nextState.id(phase),goalId)
@@ -147,7 +149,7 @@ func main() {
                         current = nextState
                         break
                     } else {
-                        nextStates = append(nextStates, nextState)
+                        nextStates.PushBack(nextState)
                     }
                 }
                 if phaseDone {
