@@ -38,9 +38,8 @@ func intsliceEqual(s1 []int, s2 []int) bool {
 }
 
 type Cube struct {
-    state []int
+    state [40]int
 }
-
 
 func (cube *Cube) id(phase int) []int{
     switch {
@@ -71,20 +70,20 @@ func (cube *Cube) id(phase int) []int{
         }
         return result
     default:
-        return cube.state
+        return cube.state[:]
     }
-    return cube.state
+    return cube.state[:]
 }
 
 func (cube *Cube) doMove(move int) *Cube {
-    newstate := make([]int,len(cube.state))
-    copy(newstate,cube.state)
-    oldstate := make([]int,len(cube.state))
+    var newstate [40]int
+    var oldstate [40]int
+    newstate = cube.state
 
     turns := move % 3 + 1;
     face := move / 3;
     for turn := 0; turn < turns; turn++ {
-        copy(oldstate,newstate)
+        oldstate = newstate
         for i,v := range affectedCubies[face][:8] {
             isCorner := intbool(i > 3)
             target := v + isCorner*12
