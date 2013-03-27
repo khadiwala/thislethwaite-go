@@ -110,15 +110,15 @@ func (cube *Cube) doMove(move int) *Cube {
 }
 
 func goalCube() *Cube {
-	state:=make([]int,40)
+    var state [40]int
 	for i := 0; i < 20; i++ {
 		state[i] = i
 	}
 	return &Cube{state}
 }
 
-func DLS(node *Cube,goalId []int,depth int,phase int) (*Cube, bool){
-    if depth == 0 {
+func DLS(node *Cube,goalId []int,depth int,phase int,seen map[Cube]bool) (*Cube, bool){
+    if depth == 0 || seen[*node]{
         nodeId := node.id(phase)
         if intsliceEqual(goalId,nodeId) {
             return node, true
@@ -127,10 +127,11 @@ func DLS(node *Cube,goalId []int,depth int,phase int) (*Cube, bool){
     } else if depth > 0 {
         for _,move := range phaseMoves[phase] {
             next := node.doMove(move)
-            if next,ok := DLS(next,goalId,depth - 1, phase); ok {
+            if next,ok := DLS(next,goalId,depth - 1, phase,seen); ok {
                 return next, true
             }
         }
+        seen[*node] = true
     }
     return node, false
 }
@@ -140,7 +141,7 @@ func main() {
     rand.Seed(time.Now().UnixNano())
     goal := goalCube()
     current := goalCube()
-    for i:=0; i < 5; i++ {
+    for i:=0; i < 50; i++ {
         current = current.doMove(rand.Intn(18))
     }
     fmt.Println(current)
@@ -149,8 +150,9 @@ func main() {
         var goalId, depth, ok = goal.id(phase), 0, false
         var res *Cube
         for ! ok {
+            seen := make(map[Cube]bool)
             fmt.Println(depth)
-            res,ok = DLS(current,goalId,depth,phase)
+            res,ok = DLS(current,goalId,depth,phase,seen)
             depth++
         }
         current = res
