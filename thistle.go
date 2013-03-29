@@ -117,26 +117,6 @@ func goalCube() *Cube {
 	return &Cube{state}
 }
 
-func DLS(node *Cube,goalId []int,depth int,phase int,seen map[Cube]bool) (*Cube, bool){
-    if depth == 0 || seen[*node]{
-        nodeId := node.id(phase)
-        if intsliceEqual(goalId,nodeId) {
-            return node, true
-        }
-        return node, false
-    } else if depth > 0 {
-        for _,move := range phaseMoves[phase] {
-            next := node.doMove(move)
-            if next,ok := DLS(next,goalId,depth - 1, phase,seen); ok {
-                return next, true
-            }
-        }
-        seen[*node] = true
-    }
-    return node, false
-}
-
-
 func main() {
     rand.Seed(time.Now().UnixNano())
     goal := goalCube()
@@ -147,13 +127,33 @@ func main() {
     fmt.Println(current)
 
     for phase := 0; phase < 4; phase++ {
-        var goalId, depth, ok = goal.id(phase), 0, false
+        var goalId, limit, ok = goal.id(phase), 0, false
         var res *Cube
         for ! ok {
-            seen := make(map[Cube]bool)
-            fmt.Println(depth)
-            res,ok = DLS(current,goalId,depth,phase,seen)
-            depth++
+            seen := make(map[Cube]int)
+            depth := 0
+            var dls func(node *Cube, depth int) (*Cube, bool)
+            dls = func(node *Cube,depth int) (*Cube,bool) {
+                if d,ok := seen[*node]; depth >= limit || (ok && d < depth) {
+                    nodeId := node.id(phase)
+                    if intsliceEqual(goalId,nodeId) {
+                        return node, true
+                    }
+                    return node, false
+                } else {
+                    seen[*node] = depth
+                    for _,move := range phaseMoves[phase] {
+                        next := node.doMove(move)
+                        if next,ok := dls(next,depth+1); ok {
+                            fmt.Println("good:" ,move)
+                            return next, true
+                        }
+                    }
+                }
+                return node, false
+            } 
+            res,ok = dls(current,depth)
+            limit++
         }
         current = res
         fmt.Println(phase+1,res)
