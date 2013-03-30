@@ -1,4 +1,4 @@
 thislethwaite-go
 ================
 
-[Info]("http://www.mrgrieves.github.com/thislethwaite-go")
+[Info](http://mrgrieves.github.com/thislethwaite-go/)
